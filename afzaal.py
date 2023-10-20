@@ -2,8 +2,11 @@ import sys
 import asyncio
 import aiohttp
 
-async def enumerate_subdomains(url, wordlist, output_format="txt"):
+async def enumerate_subdomains(url, output_format="txt"):
     live_subdomains = []
+
+    with open('wordlist.txt', 'r') as wordlist_file:
+        wordlist = [line.strip() for line in wordlist_file]
 
     async with aiohttp.ClientSession() as session:
         tasks = []
@@ -42,13 +45,10 @@ def main():
 
     url = sys.argv[2]
 
-    with open('custom_wordlist.txt', 'r') as file:
-        wordlist = [line.strip() for line in file]
-
     print(f"Checking subdomains for {url}:\n")
 
     output_format = "txt"  # Change to "json" to output results in JSON format
-    asyncio.run(enumerate_subdomains(url, wordlist, output_format))
+    asyncio.run(enumerate_subdomains(url, output_format))
 
 if _name_ == "_main_":
     main()
