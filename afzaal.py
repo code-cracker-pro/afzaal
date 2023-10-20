@@ -9,28 +9,26 @@ async def enumerate_subdomains(url, output_format="txt"):
         wordlist = [line.strip() for line in wordlist_file]
 
     async with aiohttp.ClientSession() as session:
-        tasks = []
+        semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
 
         async def check_subdomain(subdomain):
             full_url = f"http://{subdomain}.{url}"
             try:
-                async with session.get(full_url, timeout=5) as response:
-                    if response.status == 200:
-                        status = "L"
-                        live_subdomains.append(f"{full_url} ({status})")
-                    else:
-                        status = "X"
-                    if output_format == "json":
-                        print(f'{{"url": "{full_url}", "status": "{status}"}}')
-                    else:
-                        print(f"{full_url} ({status})")
+                async with semaphore:
+                    async with session.get(full_url, timeout=5) as response:
+                        if response.status == 200:
+                            status = "L"
+                            live_subdomains.append(f"{full_url} ({status})")
+                        else:
+                            status = "X"
+                        if output_format == "json":
+                            print(f'{{"url": "{full_url}", "status": "{status}"}}')
+                        else:
+                            print(f"{full_url} ({status})")
             except aiohttp.ClientError:
                 pass
 
-        for subdomain in wordlist:
-            task = asyncio.ensure_future(check_subdomain(subdomain))
-            tasks.append(task)
-
+        tasks = [check_subdomain(subdomain) for subdomain in wordlist]
         await asyncio.gather(*tasks)
 
     if output_format != "json":
@@ -47,7 +45,7 @@ def main():
 
     print(f"Checking subdomains for {url}:\n")
 
-    output_format = "txt"  # Change to "json" to output results in JSON format
+    output_format = "txt"
     asyncio.run(enumerate_subdomains(url, output_format))
 
 if __name__ == "__main__":
