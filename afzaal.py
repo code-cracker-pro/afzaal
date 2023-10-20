@@ -40,7 +40,7 @@ async def enumerate_subdomains(url, output_format="txt"):
 
 def main():
     if len(sys.argv) != 3 or sys.argv[1] != "-u":
-        print("Usage: afzaal.py -u http://example.com")
+        print("Usage: python afzaal.py -u http://example.com")
         sys.exit(1)
 
     url = sys.argv[2]
@@ -50,5 +50,5 @@ def main():
     output_format = "txt"  # Change to "json" to output results in JSON format
     asyncio.run(enumerate_subdomains(url, output_format))
 
-if _name_ == "_main_":
-    main()
+if __name__ == "__main__":
+    main()
