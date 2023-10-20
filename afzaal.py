@@ -9,13 +9,13 @@ async def enumerate_subdomains(url, output_format="txt"):
         wordlist = [line.strip() for line in wordlist_file]
 
     async with aiohttp.ClientSession() as session:
-        semaphore = asyncio.Semaphore(10)  # Limit concurrent requests to 10
+        semaphore = asyncio.Semaphore(5)  # Limit concurrent requests to 5
 
         async def check_subdomain(subdomain):
             full_url = f"http://{subdomain}.{url}"
             try:
                 async with semaphore:
-                    async with session.get(full_url, timeout=5) as response:
+                    async with session.get(full_url, timeout=10) as response:
                         if response.status == 200:
                             status = "L"
                             live_subdomains.append(f"{full_url} ({status})")
